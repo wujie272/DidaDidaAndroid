@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_clock_in_short">打卡上班</string>
+    <string name="shortcut_clock_in_long">记录上班时间</string>
+    <string name="shortcut_clock_out_short">打卡下班</string>
+    <string name="shortcut_clock_out_long">记录下班时间</string>
+    <string name="shortcut_auto_fill_short">自动填今天</string>
+    <string name="shortcut_auto_fill_long">自动填入今天的默认打卡时间</string>
+</resources>

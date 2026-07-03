@@ -1,0 +1,63 @@
+package com.jaye.didadida.ui.settings
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.jaye.didadida.data.WorkLogRepository
+import com.jaye.didadida.domain.*
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalTime
+
+class SettingsViewModel(
+    private val repository: WorkLogRepository
+) : ViewModel() {
+
+    private val _settings = MutableStateFlow(SettingsConfig())
+    val settings: StateFlow<SettingsConfig> = _settings.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            repository.settings().collect { _settings.value = it }
+        }
+    }
+
+    fun updateStandardHours(hours: Double) {
+        viewModelScope.launch {
+            val s = _settings.value.copy(standardHoursPerDay = hours)
+            _settings.value = s
+            repository.saveSettings(s)
+        }
+    }
+
+    fun updateBreakRule(index: Int, label: String, startHour: Int, startMin: Int, endHour: Int, endMin: Int) {
+        viewModelScope.launch {
+            val rules = _settings.value.breakRules.toMutableList()
+            if (index in rules.indices) {
+                rules[index] = BreakRule(
+                    label = label,
+                    start = LocalTime(startHour, startMin),
+                    end = LocalTime(endHour, endMin),
+                )
+                val s = _settings.value.copy(breakRules = rules)
+                _settings.value = s
+                repository.saveSettings(s)
+            }
+        }
+    }
+
+    fun updateHourlyRate(rate: Double) {
+        viewModelScope.launch {
+            val s = _settings.value.copy(hourlyRate = rate)
+            _settings.value = s
+            repository.saveSettings(s)
+        }
+    }
+
+    fun updateOvertimeRate(rate: Double) {
+        viewModelScope.launch {
+            val s = _settings.value.copy(overtimeRate = rate)
+            _settings.value = s
+            repository.saveSettings(s)
+        }
+    }
+}

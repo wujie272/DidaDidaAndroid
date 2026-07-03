@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="clock_in"
+        android:enabled="true"
+        android:icon="@drawable/ic_clock_in"
+        android:shortcutShortLabel="@string/shortcut_clock_in_short"
+        android:shortcutLongLabel="@string/shortcut_clock_in_long">
+        <intent
+            android:action="com.jaye.didadida.action.CLOCK_IN"
+            android:targetPackage="com.jaye.didadida"
+            android:targetClass="com.jaye.didadida.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="clock_out"
+        android:enabled="true"
+        android:icon="@drawable/ic_clock_out"
+        android:shortcutShortLabel="@string/shortcut_clock_out_short"
+        android:shortcutLongLabel="@string/shortcut_clock_out_long">
+        <intent
+            android:action="com.jaye.didadida.action.CLOCK_OUT"
+            android:targetPackage="com.jaye.didadida"
+            android:targetClass="com.jaye.didadida.MainActivity" />
+    </shortcut>
+    <shortcut
+        android:shortcutId="auto_fill"
+        android:enabled="true"
+        android:icon="@drawable/ic_auto"
+        android:shortcutShortLabel="@string/shortcut_auto_fill_short"
+        android:shortcutLongLabel="@string/shortcut_auto_fill_long">
+        <intent
+            android:action="com.jaye.didadida.action.AUTO_FILL_TODAY"
+            android:targetPackage="com.jaye.didadida"
+            android:targetClass="com.jaye.didadida.MainActivity" />
+    </shortcut>
+</shortcuts>
