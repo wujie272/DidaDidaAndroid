@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 允许外部 App 查询打卡数据 -->
+    <permission
+        android:name="com.jaye.didadida.permission.READ_DATA"
+        android:protectionLevel="normal" />
+    <uses-permission android:name="com.jaye.didadida.permission.READ_DATA" />
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -23,5 +29,15 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
+        <!-- 外部数据查询 Service（用于 RikkaHub 等 App 读取打卡数据） -->
+        <service
+            android:name=".bridge.DataQueryService"
+            android:exported="true"
+            android:permission="com.jaye.didadida.permission.READ_DATA" />
+
+        <!-- 声明 AppDataBridge 协议版本，供插件系统自动发现 -->
+        <meta-data
+            android:name="app_data_bridge"
+            android:value="v1" />
     </application>
 </manifest>
