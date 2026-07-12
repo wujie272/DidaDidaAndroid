@@ -12,6 +12,14 @@ class SettingsViewModel(
     private val repository: WorkLogRepository
 ) : ViewModel() {
 
+    // 撒花预览触发器
+    private val _previewTrigger = MutableStateFlow(0)
+    val previewTrigger: StateFlow<Int> = _previewTrigger.asStateFlow()
+
+    fun triggerConfettiPreview() {
+        _previewTrigger.value = _previewTrigger.value + 1
+    }
+
     private val _settings = MutableStateFlow(SettingsConfig())
     val settings: StateFlow<SettingsConfig> = _settings.asStateFlow()
 

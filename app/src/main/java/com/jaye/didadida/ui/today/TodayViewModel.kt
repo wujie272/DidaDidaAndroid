@@ -12,6 +12,10 @@ class TodayViewModel(
     private val repository: WorkLogRepository
 ) : ViewModel() {
 
+    // 下班撒花触发器：每次下班打卡成功 +1
+    private val _confettiTrigger = MutableStateFlow(0)
+    val confettiTrigger: StateFlow<Int> = _confettiTrigger.asStateFlow()
+
     data class UiState(
         val todayLog: WorkLog? = null,
         val settings: SettingsConfig = SettingsConfig(),
@@ -43,6 +47,7 @@ class TodayViewModel(
     fun clockOut() {
         viewModelScope.launch {
             repository.clockOut(WorkLog.today())
+            _confettiTrigger.value = _confettiTrigger.value + 1
         }
     }
 

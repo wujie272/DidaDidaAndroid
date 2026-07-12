@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -6,6 +9,22 @@ plugins {
 }
 
 android {
+
+    // 加载签名配置
+    val signingPropsFile = rootProject.file("signing.properties")
+    val signingProps = if (signingPropsFile.exists()) {
+        Properties().apply { load(FileInputStream(signingPropsFile)) }
+    } else null
+
+    signingConfigs {
+        create("release") {
+            storeFile = signingProps?.get("storeFile")?.let { rootProject.file(it as String) }
+            storePassword = signingProps?.get("storePassword") as? String
+            keyAlias = signingProps?.get("keyAlias") as? String
+            keyPassword = signingProps?.get("keyPassword") as? String
+        }
+    }
+    
     namespace = "com.jaye.didadida"
     compileSdk = 35
 
@@ -22,6 +41,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -66,6 +86,9 @@ dependencies {
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Konfetti - 下班撒花 🎉
+    implementation("nl.dionsegijn:konfetti-compose:2.0.5")
 
     // Kotlinx Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
