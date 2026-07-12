@@ -33,11 +33,16 @@
         <receiver
             android:name=".bridge.DataQueryReceiver"
             android:exported="true"
-            android:permission="com.jaye.didadida.permission.READ_DATA" />
-
-        <!-- 声明 AppDataBridge 协议版本，供插件系统自动发现 -->
-        <meta-data
-            android:name="app_data_bridge"
-            android:value="v1" />
+            android:permission="com.jaye.didadida.permission.READ_DATA">
+            <intent-filter>
+                <action android:name="QUERY_LOGS" />
+                <action android:name="QUERY_SETTINGS" />
+                <action android:name="QUERY_MONTH" />
+                <action android:name="QUERY_TODAY" />
+            </intent-filter>
+            <meta-data
+                android:name="app_data_bridge"
+                android:value="v1" />
+        </receiver>
     </application>
 </manifest>
