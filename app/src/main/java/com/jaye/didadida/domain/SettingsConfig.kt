@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SettingsConfig(
     val standardHoursPerDay: Double = 8.0,
+    val defaultStartTime: LocalTime = LocalTime(9, 0),
     val breakRules: List<BreakRule> = listOf(
         BreakRule("午餐", LocalTime(12, 0), LocalTime(13, 0)),
         BreakRule("晚餐", LocalTime(18, 0), LocalTime(18, 30)),

@@ -24,15 +24,12 @@ class RecordsViewModel(
 
     init {
         viewModelScope.launch {
-            combine(
-                repository.allWorkLogs(),
-                repository.settings(),
-            ) { _, settings -> settings }
-                .collect { settings ->
-                    val s = _state.value
-                    val summaries = repository.monthlySummaries(s.year, s.month, settings)
-                    _state.value = s.copy(summaries = summaries, settings = settings)
-                }
+            repository.allWorkLogs().collect { _ ->
+                val s = _state.value
+                val settings = repository.loadSettings()
+                val summaries = repository.monthlySummaries(s.year, s.month, settings)
+                _state.value = s.copy(summaries = summaries, settings = settings)
+            }
         }
     }
 
@@ -54,12 +51,18 @@ class RecordsViewModel(
         reload()
     }
 
+    fun deleteWorkLog(date: kotlinx.datetime.LocalDate) {
+        viewModelScope.launch {
+            repository.deleteWorkLog(date)
+        }
+    }
+
     private fun reload() {
         viewModelScope.launch {
             val s = _state.value
             val settings = repository.loadSettings()
             val summaries = repository.monthlySummaries(s.year, s.month, settings)
-            _state.value = s.copy(summaries = summaries)
+            _state.value = s.copy(summaries = summaries, settings = settings)
         }
     }
 }

@@ -54,13 +54,19 @@ class WorkLogRepository(private val storage: WorkLogStorage) {
     /**
      * 自动填今天：用标准工时自动生成打卡记录
      */
+    suspend fun exportAllData(): String = storage.exportAllData()
+
+    suspend fun importAllData(jsonString: String): Boolean = storage.importAllData(jsonString)
+
+    /**
+     * 自动填今天：用标准工时自动生成打卡记录
+     */
     suspend fun autoFillToday(settings: SettingsConfig) {
         val today = WorkLog.today()
         val existing = storage.getWorkLog(today)
         if (existing?.clockIn != null && existing.clockOut != null) return  // 已完整打卡，跳过
 
-        // 假设9点上班，9+标准工时+休息 = 下班
-        val defaultIn = LocalTime(9, 0)
+        val defaultIn = settings.defaultStartTime
         val totalBreak = settings.breakRules.sumOf { it.durationMinutes }
         val workSeconds = (settings.standardHoursPerDay * 3600).toInt() + totalBreak * 60
         val outSecond = defaultIn.toSecondOfDay() + workSeconds

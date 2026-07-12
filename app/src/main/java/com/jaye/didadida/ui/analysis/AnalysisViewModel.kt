@@ -35,30 +35,30 @@ class AnalysisViewModel(
 
     init {
         viewModelScope.launch {
-            combine(
-                repository.allWorkLogs(),
-                repository.settings(),
-            ) { _, s -> s }
-                .collect { settings ->
-                    refresh(settings)
-                }
+            repository.allWorkLogs().collect { _ ->
+                val settings = repository.loadSettings()
+                refresh(settings)
+            }
         }
     }
 
-    private suspend fun refresh(settings: SettingsConfig) {
-        val s = _state.value
-        val summaries = repository.monthlySummaries(s.year, s.month, settings)
-        val stats = computeStats(summaries, settings)
-        _state.value = s.copy(summaries = summaries, stats = stats, settings = settings)
-    }
+
 
     fun selectMonth(year: Int, month: Int) {
         _state.update { it.copy(year = year, month = month) }
         viewModelScope.launch {
-            val s = _state.value
             val settings = repository.loadSettings()
-            refresh(settings)
+            refresh(settings, year, month)
         }
+    }
+
+    private suspend fun refresh(settings: SettingsConfig, year: Int? = null, month: Int? = null) {
+        val s = _state.value
+        val y = year ?: s.year
+        val m = month ?: s.month
+        val summaries = repository.monthlySummaries(y, m, settings)
+        val stats = computeStats(summaries, settings)
+        _state.value = s.copy(year = y, month = m, summaries = summaries, stats = stats, settings = settings)
     }
 
     private fun computeStats(summaries: List<DailySummary>, settings: SettingsConfig): MonthlyStats {

@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.jaye.didadida.domain.DailySummary
 
@@ -17,6 +18,7 @@ import com.jaye.didadida.domain.DailySummary
 @Composable
 fun RecordsScreen(viewModel: RecordsViewModel) {
     val state by viewModel.state.collectAsState()
+    var deleteDialogDate by remember { mutableStateOf<kotlinx.datetime.LocalDate?>(null) }
 
     Scaffold(
         topBar = {
@@ -58,16 +60,39 @@ fun RecordsScreen(viewModel: RecordsViewModel) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(state.summaries, key = { it.date.toString() }) { summary ->
-                        SummaryCard(summary)
+                        SummaryCard(
+                            summary = summary,
+                            onDelete = { deleteDialogDate = summary.date },
+                        )
                     }
                 }
             }
         }
     }
+    // 删除确认对话框
+    deleteDialogDate?.let { date ->
+        AlertDialog(
+            onDismissRequest = { deleteDialogDate = null },
+            title = { Text("删除记录") },
+            text = { Text("确定删除 ${date.monthNumber}月${date.dayOfMonth}日的打卡记录吗？\n此操作不可撤销。") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.deleteWorkLog(date)
+                        deleteDialogDate = null
+                    },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) { Text("删除") }
+            },
+            dismissButton = {
+                TextButton(onClick = { deleteDialogDate = null }) { Text("取消") }
+            },
+        )
+    }
 }
 
 @Composable
-fun SummaryCard(summary: DailySummary) {
+fun SummaryCard(summary: DailySummary, onDelete: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -112,6 +137,23 @@ fun SummaryCard(summary: DailySummary) {
                             color = MaterialTheme.colorScheme.secondary,
                         )
                     }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(32.dp),
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "删除",
+                        tint = MaterialTheme.colorScheme.error.copy(alpha = 0.6f),
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
             }
         }

@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.*
 import com.jaye.didadida.domain.WorkLog
 import com.jaye.didadida.domain.SettingsConfig
 
@@ -53,6 +53,32 @@ class WorkLogStorage(private val context: Context) {
 
     suspend fun getWorkLog(date: LocalDate): WorkLog? =
         loadAllWorkLogs()[date.toString()]
+
+    suspend fun exportAllData(): String {
+        val logs = loadAllWorkLogs()
+        val settings = loadSettings()
+        val bundle = mapOf(
+            "version" to 1,
+            "logs" to logs,
+            "settings" to settings,
+        )
+        return json.encodeToString(bundle)
+    }
+
+    suspend fun importAllData(jsonString: String): Boolean {
+        return try {
+            val root = json.decodeFromString<JsonObject>(jsonString)
+            root["logs"]?.let { elem ->
+                val logs = json.decodeFromString<Map<String, WorkLog>>(elem.toString())
+                persistWorkLogs(logs)
+            }
+            root["settings"]?.let { elem ->
+                val settings = json.decodeFromString<SettingsConfig>(elem.toString())
+                saveSettings(settings)
+            }
+            true
+        } catch (e: Exception) { false }
+    }
 
     private suspend fun persistWorkLogs(logs: Map<String, WorkLog>) {
         context.dataStore.edit { prefs ->

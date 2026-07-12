@@ -53,6 +53,28 @@ class SettingsViewModel(
         }
     }
 
+    fun updateDefaultStartTime(hour: Int, minute: Int) {
+        viewModelScope.launch {
+            val s = _settings.value.copy(defaultStartTime = LocalTime(hour, minute))
+            _settings.value = s
+            repository.saveSettings(s)
+        }
+    }
+
+    fun exportData(block: (String) -> Unit) {
+        viewModelScope.launch {
+            val data = repository.exportAllData()
+            block(data)
+        }
+    }
+
+    fun importData(jsonString: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val ok = repository.importAllData(jsonString)
+            onResult(ok)
+        }
+    }
+
     fun updateOvertimeRate(rate: Double) {
         viewModelScope.launch {
             val s = _settings.value.copy(overtimeRate = rate)

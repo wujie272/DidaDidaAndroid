@@ -4,20 +4,29 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(viewModel: SettingsViewModel) {
     val settings by viewModel.settings.collectAsState()
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(title = { Text("设置") })
         }
@@ -30,7 +39,12 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp),
         ) {
-            // 标准工时
+            SectionTitle("默认上班时间")
+            DefaultStartTimeEditor(
+                time = settings.defaultStartTime,
+                onUpdate = { h, m -> viewModel.updateDefaultStartTime(h, m) },
+            )
+
             SectionTitle("标准工时")
             NumberField(
                 label = "每日标准工时（小时）",
@@ -38,7 +52,6 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 onValueChange = { viewModel.updateStandardHours(it.coerceIn(1.0, 24.0)) },
             )
 
-            // 休息规则
             SectionTitle("休息扣除规则")
             settings.breakRules.forEachIndexed { index, rule ->
                 BreakRuleEditor(
@@ -50,7 +63,6 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
                 )
             }
 
-            // 薪资
             SectionTitle("薪资与加班费")
             NumberField(
                 label = "时薪（元）",
@@ -67,19 +79,46 @@ fun SettingsScreen(viewModel: SettingsViewModel) {
 
             Spacer(Modifier.height(16.dp))
 
-            // 数据说明
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                )
-            ) {
-                Text(
-                    "所有数据仅存储在本地设备上，不会上传到任何服务器。\n" +
-                            "支持备份：复制 /data/data/com.jaye.didadida/files/datastore/didadida.preferences_pb",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                )
+            SectionTitle("数据管理")
+            val clipboardManager = LocalClipboardManager.current
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "所有数据仅存储在本地设备上。导出为 JSON 后可复制到剪贴板，导入时从剪贴板读取恢复。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        OutlinedButton(onClick = {
+                            viewModel.exportData { data ->
+                                clipboardManager.setText(AnnotatedString(data))
+                                scope.launch { snackbarHostState.showSnackbar("数据已复制到剪贴板") }
+                            }
+                        }) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("导出到剪贴板")
+                        }
+                        OutlinedButton(onClick = {
+                            val text = clipboardManager.getText()?.text
+                            if (text != null) {
+                                viewModel.importData(text) { ok ->
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar(
+                                            if (ok) "数据恢复成功" else "数据格式错误，恢复失败"
+                                        )
+                                    }
+                                }
+                            } else {
+                                scope.launch { snackbarHostState.showSnackbar("剪贴板为空") }
+                            }
+                        }) {
+                            Icon(Icons.Default.ContentPaste, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text("从剪贴板导入")
+                        }
+                    }
+                }
             }
         }
     }
@@ -127,18 +166,21 @@ fun BreakRuleEditor(
     onUpdate: (String, Int, Int, Int, Int) -> Unit,
 ) {
     var label by remember(rule) { mutableStateOf(rule.label) }
+
+    fun clamp(v: String, max: Int): Int = v.toIntOrNull()?.coerceIn(0, max) ?: 0
+
     var startHour by remember(rule) { mutableStateOf(rule.start.hour.toString()) }
     var startMin by remember(rule) { mutableStateOf(rule.start.minute.toString().padStart(2, '0')) }
     var endHour by remember(rule) { mutableStateOf(rule.end.hour.toString()) }
     var endMin by remember(rule) { mutableStateOf(rule.end.minute.toString().padStart(2, '0')) }
 
+    val fire = { onUpdate(label, clamp(startHour,23), clamp(startMin,59), clamp(endHour,23), clamp(endMin,59)) }
+
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedTextField(
                 value = label,
-                onValueChange = { label = it
-                    onUpdate(it, startHour.toIntOrNull() ?: 0, startMin.toIntOrNull() ?: 0,
-                        endHour.toIntOrNull() ?: 0, endMin.toIntOrNull() ?: 0) },
+                onValueChange = { label = it; fire() },
                 label = { Text("名称") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -150,9 +192,7 @@ fun BreakRuleEditor(
             ) {
                 OutlinedTextField(
                     value = startHour,
-                    onValueChange = { startHour = it
-                        onUpdate(label, it.toIntOrNull() ?: 0, startMin.toIntOrNull() ?: 0,
-                            endHour.toIntOrNull() ?: 0, endMin.toIntOrNull() ?: 0) },
+                    onValueChange = { startHour = it; fire() },
                     label = { Text("开始(H)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -161,9 +201,7 @@ fun BreakRuleEditor(
                 Text(":")
                 OutlinedTextField(
                     value = startMin,
-                    onValueChange = { startMin = it
-                        onUpdate(label, startHour.toIntOrNull() ?: 0, it.toIntOrNull() ?: 0,
-                            endHour.toIntOrNull() ?: 0, endMin.toIntOrNull() ?: 0) },
+                    onValueChange = { startMin = it; fire() },
                     label = { Text("开始(M)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -177,9 +215,7 @@ fun BreakRuleEditor(
             ) {
                 OutlinedTextField(
                     value = endHour,
-                    onValueChange = { endHour = it
-                        onUpdate(label, startHour.toIntOrNull() ?: 0, startMin.toIntOrNull() ?: 0,
-                            it.toIntOrNull() ?: 0, endMin.toIntOrNull() ?: 0) },
+                    onValueChange = { endHour = it; fire() },
                     label = { Text("结束(H)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
@@ -188,15 +224,54 @@ fun BreakRuleEditor(
                 Text(":")
                 OutlinedTextField(
                     value = endMin,
-                    onValueChange = { endMin = it
-                        onUpdate(label, startHour.toIntOrNull() ?: 0, startMin.toIntOrNull() ?: 0,
-                            endHour.toIntOrNull() ?: 0, it.toIntOrNull() ?: 0) },
+                    onValueChange = { endMin = it; fire() },
                     label = { Text("结束(M)") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
                     modifier = Modifier.weight(1f),
                 )
             }
+        }
+    }
+}
+
+@Composable
+fun DefaultStartTimeEditor(
+    time: kotlinx.datetime.LocalTime,
+    onUpdate: (Int, Int) -> Unit,
+) {
+    var hour by remember(time) { mutableStateOf(time.hour.toString()) }
+    var minute by remember(time) { mutableStateOf(time.minute.toString().padStart(2, '0')) }
+
+    fun fire() {
+        val h = hour.toIntOrNull()?.coerceIn(0, 23) ?: 0
+        val m = minute.toIntOrNull()?.coerceIn(0, 59) ?: 0
+        onUpdate(h, m)
+    }
+
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedTextField(
+                value = hour,
+                onValueChange = { hour = it; fire() },
+                label = { Text("时") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            Text(":")
+            OutlinedTextField(
+                value = minute,
+                onValueChange = { minute = it; fire() },
+                label = { Text("分") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }

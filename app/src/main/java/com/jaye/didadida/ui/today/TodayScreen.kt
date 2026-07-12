@@ -157,8 +157,8 @@ fun TodayScreen(
 fun ProgressRing(progress: Double, hours: Double, totalHours: Double) {
     val clampedProgress = progress.coerceIn(0.0, 1.0)
     val color = when {
-        clampedProgress >= 1.0 -> Color(0xFF4CAF50)  // 达标 → 绿
-        clampedProgress >= 0.8 -> Color(0xFFFF9800)  // 接近 → 橙
+        clampedProgress >= 1.0 -> MaterialTheme.colorScheme.tertiary
+        clampedProgress >= 0.8 -> MaterialTheme.colorScheme.secondary
         else -> MaterialTheme.colorScheme.primary
     }
 
