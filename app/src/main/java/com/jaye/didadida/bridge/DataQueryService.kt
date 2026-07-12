@@ -57,7 +57,7 @@ class DataQueryService : android.app.Service() {
         serviceScope.launch {
             val resultBundle = when (action) {
                 "QUERY_LOGS" -> {
-                    val logs = repo.allWorkLogs().take(1).first()
+                    val logs = repo.allWorkLogs().first()
                     Bundle().apply {
                         putString("data_type", "work_logs")
                         putString("data", json.encodeToString(logs))
