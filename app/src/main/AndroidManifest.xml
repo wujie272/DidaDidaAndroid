@@ -32,8 +32,7 @@
         <!-- 外部数据查询 Receiver（用于 RikkaHub 等 App 读取打卡数据） -->
         <receiver
             android:name=".bridge.DataQueryReceiver"
-            android:exported="true"
-            android:permission="com.jaye.didadida.permission.READ_DATA">
+            android:exported="true">
             <intent-filter>
                 <action android:name="QUERY_LOGS" />
                 <action android:name="QUERY_SETTINGS" />
