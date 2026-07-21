@@ -29,19 +29,15 @@
                 android:name="android.app.shortcuts"
                 android:resource="@xml/shortcuts" />
         </activity>
-        <!-- 外部数据查询 Receiver（用于 RikkaHub 等 App 读取打卡数据） -->
-        <receiver
-            android:name=".bridge.DataQueryReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="QUERY_LOGS" />
-                <action android:name="QUERY_SETTINGS" />
-                <action android:name="QUERY_MONTH" />
-                <action android:name="QUERY_TODAY" />
-            </intent-filter>
+        <!-- 外部数据查询 Provider（用于 RikkaHub 等 App 读取打卡数据） -->
+        <provider
+            android:name=".bridge.DidaDataProvider"
+            android:authorities="com.jaye.didadida.provider"
+            android:exported="true"
+            android:permission="com.jaye.didadida.permission.READ_DATA">
             <meta-data
                 android:name="app_data_bridge"
                 android:value="v1" />
-        </receiver>
+        </provider>
     </application>
 </manifest>
