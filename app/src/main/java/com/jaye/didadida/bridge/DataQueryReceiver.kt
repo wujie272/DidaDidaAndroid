@@ -12,13 +12,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.Json
 import com.jaye.didadida.App
 import com.jaye.didadida.domain.WorkLog
 import com.jaye.didadida.domain.WorkTimeCalculator
+import com.jaye.didadida.domain.DailySummary
+import kotlinx.serialization.Serializable
 
 /**
  * 外部 App 数据查询 BroadcastReceiver。
@@ -32,6 +31,12 @@ import com.jaye.didadida.domain.WorkTimeCalculator
  *   - QUERY_MONTH     → 返回某月汇总 JSON（需传 year, month 参数）
  *   - QUERY_TODAY     → 返回今日打卡摘要 JSON
  */
+@Serializable
+data class TodayQueryResponse(
+    val log: WorkLog? = null,
+    val summary: DailySummary? = null,
+)
+
 class DataQueryReceiver : BroadcastReceiver() {
 
     private val json = Json {
@@ -90,14 +95,11 @@ class DataQueryReceiver : BroadcastReceiver() {
                             val summary = if (log != null) {
                                 WorkTimeCalculator.calculate(log.date, log.clockIn, log.clockOut, settings)
                             } else null
-                            val logElement = if (log != null) json.encodeToJsonElement(log) else JsonNull
-                            val summaryElement = if (summary != null) json.encodeToJsonElement(summary) else JsonNull
                             Bundle().apply {
                                 putString("data_type", "today_summary")
-                                putString("data", json.encodeToString(buildJsonObject {
-                                    put("log", logElement)
-                                    put("summary", summaryElement)
-                                }))
+                                putString("data", json.encodeToString(
+                                    TodayQueryResponse(log, summary)
+                                ))
                             }
                         }
                         else -> Bundle().apply {
