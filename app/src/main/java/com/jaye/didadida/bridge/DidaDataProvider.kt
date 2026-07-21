@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,7 +31,8 @@ class DidaDataProvider : ContentProvider() {
             when (method) {
                 "query_logs" -> Bundle().apply {
                     putString("data_type", "work_logs")
-                    putString("data", json.encodeToString(repo.allWorkLogs().first()))
+                    val logs: Map<String, WorkLog> = repo.allWorkLogs().first()
+                    putString("data", json.encodeToString(logs))
                 }
                 "query_settings" -> Bundle().apply {
                     putString("data_type", "settings")
