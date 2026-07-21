@@ -90,11 +90,13 @@ class DataQueryReceiver : BroadcastReceiver() {
                             val summary = if (log != null) {
                                 WorkTimeCalculator.calculate(log.date, log.clockIn, log.clockOut, settings)
                             } else null
+                            val logElement = if (log != null) json.encodeToJsonElement(log) else JsonNull
+                            val summaryElement = if (summary != null) json.encodeToJsonElement(summary) else JsonNull
                             Bundle().apply {
                                 putString("data_type", "today_summary")
                                 putString("data", json.encodeToString(buildJsonObject {
-                                    put("log", log?.let { json.encodeToJsonElement(it) } ?: JsonNull)
-                                    put("summary", summary?.let { json.encodeToJsonElement(it) } ?: JsonNull)
+                                    put("log", logElement)
+                                    put("summary", summaryElement)
                                 }))
                             }
                         }
