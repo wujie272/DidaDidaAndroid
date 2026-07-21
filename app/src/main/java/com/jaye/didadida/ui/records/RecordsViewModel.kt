@@ -16,7 +16,6 @@ class RecordsViewModel(
         val year: Int = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).year,
         val month: Int = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).monthNumber,
         val summaries: List<DailySummary> = emptyList(),
-        val settings: SettingsConfig = SettingsConfig(),
     )
 
     private val _state = MutableStateFlow(UiState())
@@ -28,7 +27,7 @@ class RecordsViewModel(
                 val s = _state.value
                 val settings = repository.loadSettings()
                 val summaries = repository.monthlySummaries(s.year, s.month, settings)
-                _state.value = s.copy(summaries = summaries, settings = settings)
+                _state.value = s.copy(summaries = summaries)
             }
         }
     }
@@ -62,7 +61,7 @@ class RecordsViewModel(
             val s = _state.value
             val settings = repository.loadSettings()
             val summaries = repository.monthlySummaries(s.year, s.month, settings)
-            _state.value = s.copy(summaries = summaries, settings = settings)
+            _state.value = s.copy(summaries = summaries)
         }
     }
 }

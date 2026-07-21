@@ -52,7 +52,7 @@ class WorkLogRepository(private val storage: WorkLogStorage) {
     }
 
     /**
-     * 自动填今天：用标准工时自动生成打卡记录
+     * 导出所有数据为 JSON 字符串
      */
     suspend fun exportAllData(): String = storage.exportAllData()
 

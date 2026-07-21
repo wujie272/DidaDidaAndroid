@@ -26,8 +26,6 @@ class AnalysisViewModel(
         val totalOvertimeHours: Double = 0.0,
         val avgDailyHours: Double = 0.0,
         val overtimePay: Double = 0.0,
-        val maxDay: Double = 0.0,
-        val minDay: Double = 0.0,
     )
 
     private val _state = MutableStateFlow(UiState())
@@ -68,8 +66,6 @@ class AnalysisViewModel(
         val totalEffective = worked.sumOf { it.effectiveHours }
         val totalOvertime = worked.sumOf { it.overtimeHours }
         val avg = if (worked.isNotEmpty()) totalEffective / worked.size else 0.0
-        val maxDay = worked.maxOf { it.effectiveHours }
-        val minDay = worked.minOf { it.effectiveHours }
         val pay = WorkTimeCalculator.estimateOvertimePay(worked, settings)
 
         return MonthlyStats(
@@ -78,8 +74,6 @@ class AnalysisViewModel(
             totalOvertimeHours = totalOvertime,
             avgDailyHours = avg,
             overtimePay = pay,
-            maxDay = maxDay,
-            minDay = minDay,
         )
     }
 }

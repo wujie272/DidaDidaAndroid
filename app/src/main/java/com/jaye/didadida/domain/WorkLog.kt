@@ -1,7 +1,6 @@
 package com.jaye.didadida.domain
 
 import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
@@ -29,5 +28,4 @@ data class DailySummary(
     val effectiveHours: Double,   // 有效工时（已扣休息）
     val overtimeHours: Double,    // 加班时长
     val rawHours: Double,         // 打卡总时长
-    val note: String,
 )

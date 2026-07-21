@@ -13,6 +13,17 @@ import kotlinx.serialization.json.Json
 import com.jaye.didadida.App
 import com.jaye.didadida.domain.WorkLog
 import com.jaye.didadida.domain.WorkTimeCalculator
+import com.jaye.didadida.domain.DailySummary
+
+
+/**
+ * 外部 App 查询今日打卡数据的响应体。
+ */
+@kotlinx.serialization.Serializable
+data class TodayQueryResponse(
+    val log: WorkLog? = null,
+    val summary: DailySummary? = null,
+)
 
 class DidaDataProvider : ContentProvider() {
 

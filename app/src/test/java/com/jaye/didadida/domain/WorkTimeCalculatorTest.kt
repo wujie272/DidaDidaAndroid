@@ -83,8 +83,8 @@ class WorkTimeCalculatorTest {
     @Test
     fun `加班费计算`() {
         val summaries = listOf(
-            DailySummary(refDate, LocalTime(9,0), LocalTime(18,0), 8.0, 0.0, 9.0, ""),
-            DailySummary(refDate, LocalTime(9,0), LocalTime(20,0), 9.5, 1.5, 11.0, ""),
+            DailySummary(refDate, LocalTime(9,0), LocalTime(18,0), 8.0, 0.0, 9.0),
+            DailySummary(refDate, LocalTime(9,0), LocalTime(20,0), 9.5, 1.5, 11.0),
         )
         val settings = SettingsConfig(hourlyRate = 50.0, overtimeRate = 1.5)
         val pay = WorkTimeCalculator.estimateOvertimePay(summaries, settings)
@@ -94,7 +94,7 @@ class WorkTimeCalculatorTest {
     @Test
     fun `时薪为零时不计算加班费`() {
         val summaries = listOf(
-            DailySummary(refDate, LocalTime(9,0), LocalTime(20,0), 9.5, 1.5, 11.0, ""),
+            DailySummary(refDate, LocalTime(9,0), LocalTime(20,0), 9.5, 1.5, 11.0),
         )
         val settings = SettingsConfig(hourlyRate = 0.0, overtimeRate = 1.5)
         val pay = WorkTimeCalculator.estimateOvertimePay(summaries, settings)

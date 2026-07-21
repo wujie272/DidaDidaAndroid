@@ -9,7 +9,7 @@ object WorkTimeCalculator {
      */
     fun calculate(date: LocalDate, clockIn: LocalTime?, clockOut: LocalTime?, settings: SettingsConfig): DailySummary {
         if (clockIn == null || clockOut == null) {
-            return DailySummary(date, null, null, 0.0, 0.0, 0.0, "")
+            return DailySummary(date, null, null, 0.0, 0.0, 0.0)
         }
 
         val rawMinutes = minutesBetween(clockIn, clockOut)
@@ -29,7 +29,6 @@ object WorkTimeCalculator {
             effectiveHours = effectiveHours,
             overtimeHours = overtimeHours,
             rawHours = rawHours,
-            note = "",
         )
     }
 
